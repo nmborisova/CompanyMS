@@ -43,13 +43,21 @@ public class DBManager {
         var list = new ArrayList<String>();
         // expect a SQLNonTransientConnectionException (too many connections)
         // see README.md
-        try (Connection connection = dataSource.getConnection()) {
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT * FROM users")) {
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
                     list.add(resultSet.getString("username"));
                 }
+            }
+        } finally {
+            if (connection != null) {
+                System.out.println("Closing database connection...");
+                connection.close();
+                System.out.println("Connection valid: " + connection.isValid(5));
             }
         }
         return list;
